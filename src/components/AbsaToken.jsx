@@ -1,41 +1,52 @@
-'use client'
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import toast from 'react-hot-toast'; // Make sure you've installed and set up react-hot-toast.
-
+import toast from 'react-hot-toast';
 import { useMetaMask } from "metamask-react";
-
-
 import { ethers } from 'ethers';
 import abi from '../app/api/contract_abi.json';
 
-
-
 const AbsaToken = () => {
   const { status, connect, account, chainId, ethereum, switchChain, addChain } = useMetaMask();
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0); // Initialize loyaltyPoints state
 
-  console.log()
+  useEffect(() => {
+    if (account) {
+      // Your contract and provider setup
+      const loyaltyContract = new ethers.Contract("0x92B6f182bbB4E3C67f67008d8fc427506c24F067", abi);
+      const provider = new ethers.BrowserProvider(ethereum);
+      const signer = provider.getSigner();
 
-  const loyaltyContract = new ethers.Contract("0x92B6f182bbB4E3C67f67008d8fc427506c24F067", abi);
+      // Fetch loyalty points from the contract
+      async function fetchLoyaltyPoints() {
+        try {
+          const points = await loyaltyContract.connect(signer).loyaltyPoints(account);
+          setLoyaltyPoints(points.toNumber());
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // Fetch loyalty points when the account changes
+      fetchLoyaltyPoints();
+    }
+  }, [account, ethereum]);
 
   const handleRedeemPoint = async () => {
-    // Get Access To Browser Provider via MetaMask
-    const provider = new ethers.BrowserProvider(ethereum);
-    // Get Access To Signer i.e Selected Metamask Account
-    const signer = await provider.getSigner();
-    // Make Smart Contract Method/Function Call
+    // Your redemption logic here
     try {
+      const provider = new ethers.BrowserProvider(ethereum);
+      const signer = await provider.getSigner();
 
+      // Make Smart Contract Method/Function Call
+      const loyaltyContract = new ethers.Contract("0x92B6f182bbB4E3C67f67008d8fc427506c24F067", abi);
       await loyaltyContract.connect(signer).redeemLoyaltyPoints(100);
+
       toast.success('Token Successfully Redeemed!');
     } catch (e) {
-      console.error(e.message)
-      toast.error("something went wrong")
+      console.error(e.message);
+      toast.error("Something went wrong");
     }
- }
-
-//  const loyaltyPoints = await loyaltyContract.connect(signer).loyaltyPoints(account)
+  };
 
   return (
     <div className='mt-16 rounded-3xl bg-white p-5'>
@@ -48,7 +59,7 @@ const AbsaToken = () => {
             Total Tokens Accumulated
           </p>
           <h1 className="text-9xl">
-            {"1500"} <span className='text-red-600 text-5xl font-extrabold font-mono'>ATK</span>
+            {"150"} <span className='text-red-600 text-5xl font-extrabold font-mono'>ATK</span>
           </h1>
         </div>
         <Image
@@ -76,7 +87,7 @@ const AbsaToken = () => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default AbsaToken;

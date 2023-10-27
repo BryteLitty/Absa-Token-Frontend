@@ -18,7 +18,7 @@ const PageHeader = () => {
 
         {status === "notConnected" && <div>
         <br />
-        <button className="button is-success" onClick={() => connect()}>Connect to MetaMask</button>
+        <button className="button is-success bg-gradient text-white font-bold p-3 rounded" onClick={() => connect()}>Connect to MetaMask</button>
 
         </div>}
 
